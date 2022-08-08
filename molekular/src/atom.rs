@@ -1,5 +1,6 @@
 use crate::math;
 use crate::particle;
+use crate::particle::SubatomicParticleType;
 use std::fmt::Debug;
 
 #[derive(Debug)]
@@ -14,7 +15,7 @@ impl Atom {
     pub fn new(charge: f32) -> Self {
         Self {
             electrons: vec![],
-            nucleus: particle::Particle::new(0.0),
+            nucleus: particle::Particle::new(SubatomicParticleType::Neutron, 1e-30, 1e-16),
         }
     }
 

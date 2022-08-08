@@ -10,9 +10,7 @@ use kiss3d::nalgebra::{Matrix, Translation3, UnitQuaternion, Vector3};
 use kiss3d::scene::SceneNode;
 use kiss3d::window::{State, Window};
 
-const scale: f32 = 10e8;
-const proton_render_radius: f32 = 0.2;
-const electron_render_radius: f32 = 0.1;
+const SIMULATION_SCALE: f32 = 10e8;
 
 struct AppState {
     nodes: Vec<SceneNode>,
@@ -24,11 +22,14 @@ impl AppState {
         // init all paticle nodes in the scene
         let mut nodes: Vec<SceneNode> = Vec::<SceneNode>::new();
         for particle in &simulation.particles {
-            let mut particle_node = window.add_sphere(proton_render_radius);
+            let mut particle_node =
+                window.add_sphere(particle::Particle::get_radius(particle.particle_type));
+            let (r, g, b) = particle::Particle::get_color(particle.particle_type);
+            particle_node.set_color(r, g, b);
             particle_node.append_translation(&Translation3::new(
-                particle.pos.x * scale,
-                particle.pos.y * scale,
-                particle.pos.z * scale,
+                particle.pos.x * SIMULATION_SCALE,
+                particle.pos.y * SIMULATION_SCALE,
+                particle.pos.z * SIMULATION_SCALE,
             ));
             nodes.push(particle_node);
         }
@@ -45,9 +46,9 @@ impl State for AppState {
         self.simulation.step();
         for (i, particle) in self.simulation.particles.iter().enumerate() {
             self.nodes[i].append_translation(&Translation3::new(
-                particle.pos.x * scale,
-                particle.pos.y * scale,
-                particle.pos.z * scale,
+                particle.pos.x * SIMULATION_SCALE,
+                particle.pos.y * SIMULATION_SCALE,
+                particle.pos.z * SIMULATION_SCALE,
             ));
         }
     }
