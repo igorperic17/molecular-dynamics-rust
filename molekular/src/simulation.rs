@@ -6,7 +6,7 @@ const COULUMB_CONSTANT: f32 = 9.0 * 10e9;
 
 pub struct Simulation {
     delta_t: f32,
-    particles: Vec<particle::Particle>,
+    pub particles: Vec<particle::Particle>,
     temperature: f32,
 }
 
@@ -54,7 +54,7 @@ impl Simulation {
 
                 let q_force = math::Vec3::new(f_x, f_y, f_z);
 
-                p[i].pos = p[i].pos + q_force;
+                p[i].pos = p[i].pos - q_force;
                 p[j].pos = p[j].pos + q_force;
                 for k in 0..p.len() {
                     println!("{:?}", p[k]);
@@ -64,8 +64,10 @@ impl Simulation {
     }
 
     pub fn add_atom(self: &mut Self, atom: &atom::Atom) {
+        // println!("Adding nucleus to the simulation...");
         self.particles.push(atom.nucleus);
         for particle in &atom.electrons {
+            // println!("Adding electron to the simulation...");
             self.particles.push(*particle);
         }
     }

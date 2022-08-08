@@ -20,9 +20,9 @@ impl Atom {
 
     pub fn create_hidrogen(location: math::Vec3) -> Self {
         let offset = math::Vec3 {
-            x: 0.0,
+            x: 0.000000000000001,
             y: 0.0,
-            z: 1e-12, // let's pretend electron is 1 Angadron (or whatever it's called) above the nucleus in space
+            z: 0.0,
         };
         let electron = particle::Particle::create_electron(location + offset);
         Self {
