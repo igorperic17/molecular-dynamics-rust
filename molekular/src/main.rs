@@ -1,16 +1,16 @@
 mod atom;
-mod math;
 mod particle;
 mod simulation;
 
 extern crate kiss3d;
 
 use kiss3d::light::Light;
-use kiss3d::nalgebra::{Matrix, Translation3, UnitQuaternion, Vector3};
+use kiss3d::nalgebra::{Matrix, Point2, Point3, Translation3, Vector3};
 use kiss3d::scene::SceneNode;
 use kiss3d::window::{State, Window};
+use simulation as sim;
 
-const SIMULATION_SCALE: f32 = 10e8;
+pub const SIMULATION_SCALE: f32 = 1e10;
 
 struct AppState {
     nodes: Vec<SceneNode>,
@@ -22,8 +22,9 @@ impl AppState {
         // init all paticle nodes in the scene
         let mut nodes: Vec<SceneNode> = Vec::<SceneNode>::new();
         for particle in &simulation.particles {
-            let mut particle_node =
-                window.add_sphere(particle::Particle::get_radius(particle.particle_type));
+            let mut particle_node = window.add_sphere(
+                particle::Particle::get_radius(particle.particle_type) * SIMULATION_SCALE,
+            );
             let (r, g, b) = particle::Particle::get_color(particle.particle_type);
             particle_node.set_color(r, g, b);
             particle_node.append_translation(&Translation3::new(
@@ -45,7 +46,7 @@ impl State for AppState {
     fn step(&mut self, _: &mut Window) {
         self.simulation.step();
         for (i, particle) in self.simulation.particles.iter().enumerate() {
-            self.nodes[i].append_translation(&Translation3::new(
+            self.nodes[i].set_local_translation(Translation3::new(
                 particle.pos.x * SIMULATION_SCALE,
                 particle.pos.y * SIMULATION_SCALE,
                 particle.pos.z * SIMULATION_SCALE,
@@ -55,27 +56,42 @@ impl State for AppState {
 }
 
 fn main() {
-    // let steps = 50000;
+    let steps = -1;
+    // let steps = 1000;
 
     // create a simulation with deltaT = 1fs and temperature = 500 K
-    let mut simulation = simulation::Simulation::new(1.0, 500.0);
+    let mut simulation = simulation::Simulation::new(1e-30, 500.0);
 
-    let hydrogen = atom::Atom::create_hidrogen(math::Vec3::new(0.0, 0.0, 0.0));
+    let hydrogen = atom::Atom::create_hidrogen(Vector3::new(0.0, 0.0, 1e-10));
     simulation.add_atom(&hydrogen);
 
-    let window: &mut Window = &mut Window::new("Kiss3d: wasm example");
+    let window: &mut Window = &mut Window::new("Hydrogen atom simulation");
     window.set_light(Light::StickToCamera);
-    // let mut c = window.add_sphere(proton_render_radius);
-
-    // c.set_color(1.0, 1.0, 1.0);
-    // c.set_local_translation(Translation3::new(0.0, 0.0, 10.0));
-
-    // let rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
     let state = &mut AppState::new(window, simulation);
 
+    let mut i = 0;
     while window.render() {
-        state.step(window);
-    }
+        if steps == -1 || i < steps {
+            state.step(window);
+        }
 
-    println!("Constructing the simulation...");
+        let axis_len = 0.1;
+        let zero = Point3::new(0.0, 0.0, 0.0);
+        let a = Point3::new(axis_len, 0.0, 0.0);
+        let b = Point3::new(0.0, axis_len, 0.0);
+        let c = Point3::new(0.0, 0.0, axis_len);
+
+        // window.set_line_width(2.0);
+        window.draw_line(&zero, &a, &Point3::new(1.0, 0.0, 0.0));
+        window.draw_line(&zero, &b, &Point3::new(0.0, 1.0, 0.0));
+        window.draw_line(&zero, &c, &Point3::new(0.0, 0.0, 1.0));
+
+        // window.draw_planar_line(
+        //     &Point2::new(-100.0, -200.0),
+        //     &Point2::new(100.0, -200.0),
+        //     &Point3::new(1.0, 1.0, 1.0),
+        // );
+
+        i += 1;
+    }
 }

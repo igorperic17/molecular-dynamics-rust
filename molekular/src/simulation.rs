@@ -1,6 +1,6 @@
 use crate::atom;
-use crate::math;
 use crate::particle;
+use kiss3d::nalgebra::Vector3;
 
 const COULUMB_CONSTANT: f32 = 9.0 * 10e9;
 
@@ -19,18 +19,12 @@ impl Simulation {
             temperature: temperature,
         }
     }
-    pub fn run(self: &mut Self, n_steps: i32) {
-        for i in 0..n_steps {
-            println!("Step #{}...", i);
-            self.step();
-        }
-    }
 
     pub fn step(self: &mut Self) {
         let p: &mut Vec<particle::Particle> = &mut self.particles;
         for i in 0..(p.len() - 1) {
             for j in (i + 1)..p.len() {
-                let d_vec: math::Vec3 = p[i].pos - p[j].pos;
+                let d_vec: Vector3<f32> = (p[i].pos - p[j].pos).abs();
 
                 let f_charge = COULUMB_CONSTANT * (p[i].q * p[j].q);
 
@@ -52,10 +46,15 @@ impl Simulation {
                     f_charge / d_vec.z
                 };
 
-                let q_force = math::Vec3::new(f_x, f_y, f_z);
+                let q_force = Vector3::new(f_x, f_y, f_z);
 
-                p[i].pos = p[i].pos - q_force;
-                p[j].pos = p[j].pos + q_force;
+                // apply Newton's 2nd law of motion
+                p[i].v += q_force;
+                p[j].v += q_force;
+                let d_i = (p[i].v / p[i].m) * self.delta_t;
+                let d_j = (p[j].v / p[j].m) * self.delta_t;
+                p[i].pos += d_i;
+                p[j].pos += d_j;
                 for k in 0..p.len() {
                     println!("{:?}", p[k]);
                 }

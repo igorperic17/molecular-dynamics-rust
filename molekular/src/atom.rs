@@ -1,6 +1,6 @@
-use crate::math;
 use crate::particle;
 use crate::particle::SubatomicParticleType;
+use kiss3d::nalgebra::Vector3;
 use std::fmt::Debug;
 
 #[derive(Debug)]
@@ -19,12 +19,10 @@ impl Atom {
         }
     }
 
-    pub fn create_hidrogen(location: math::Vec3) -> Self {
-        let offset = math::Vec3 {
-            x: 0.000000000000001,
-            y: 0.0,
-            z: 0.0,
-        };
+    pub fn create_hidrogen(location: Vector3<f32>) -> Self {
+        // According to: https://www.sciencefocus.com/science/whats-the-distance-from-a-nucleus-to-an-electron/
+        // the electron (if it was a particle, hehe) orbits the nucleus at a distance of 1/20 nanometers
+        let offset = Vector3::new(0.05e-9, 0.0, 0.0);
         let electron = particle::Particle::create_electron(location + offset);
         Self {
             nucleus: particle::Particle::create_proton(location),
