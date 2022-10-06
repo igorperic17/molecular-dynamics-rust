@@ -12,14 +12,7 @@ pub struct Atom {
 }
 
 impl Atom {
-    pub fn new(charge: f32) -> Self {
-        Self {
-            electrons: vec![],
-            nucleus: particle::Particle::new(SubatomicParticleType::Neutron, 1e-30, 1e-16),
-        }
-    }
-
-    pub fn create_hidrogen(location: Vector3<f32>) -> Self {
+    pub fn create_hidrogen(location: Vector3<f64>) -> Self {
         // According to: https://www.sciencefocus.com/science/whats-the-distance-from-a-nucleus-to-an-electron/
         // the electron (if it was a particle, hehe) orbits the nucleus at a distance of 1/20 nanometers
         let offset = Vector3::new(0.05e-9, 0.0, 0.0);

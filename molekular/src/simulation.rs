@@ -2,17 +2,23 @@ use crate::atom;
 use crate::particle;
 use kiss3d::nalgebra::Vector3;
 
-const COULUMB_CONSTANT: f32 = 9.0 * 10e9;
+const COULUMB_CONSTANT: f64 = 9.0 * 10e9;
+
+pub enum ParticleHistoryEnum {
+    Position,
+    Velocity,
+    Accelleration
+}
 
 pub struct Simulation {
-    delta_t: f32,
+    delta_t: f64,
     pub particles: Vec<particle::Particle>,
-    temperature: f32,
+    temperature: f64,
 }
 
 impl Simulation {
     // deltaT - simulation timestamp [fs]
-    pub fn new(delta_t: f32, temperature: f32) -> Self {
+    pub fn new(delta_t: f64, temperature: f64) -> Self {
         Simulation {
             delta_t: delta_t,
             particles: Vec::new(),
@@ -23,10 +29,13 @@ impl Simulation {
     pub fn step(self: &mut Self) {
         let p: &mut Vec<particle::Particle> = &mut self.particles;
         for i in 0..(p.len() - 1) {
-            for j in (i + 1)..p.len() {
-                let d_vec: Vector3<f32> = (p[i].pos - p[j].pos).abs();
+            // TODO: update sphere radius to be visible from the current camera position and the zoom level
 
-                let f_charge = COULUMB_CONSTANT * (p[i].q * p[j].q);
+            // update positions w.r.t. Coloumb forces
+            for j in (i + 1)..p.len() {
+                let d_vec: Vector3<f64> = p[i].pos - p[j].pos;
+
+                let f_charge = -COULUMB_CONSTANT * (p[i].q * p[j].q);
 
                 let f_x = if d_vec.x == 0.0 {
                     0.0
@@ -48,26 +57,42 @@ impl Simulation {
 
                 let q_force = Vector3::new(f_x, f_y, f_z);
 
-                // apply Newton's 2nd law of motion
-                p[i].v += q_force;
-                p[j].v += q_force;
-                let d_i = (p[i].v / p[i].m) * self.delta_t;
-                let d_j = (p[j].v / p[j].m) * self.delta_t;
-                p[i].pos += d_i;
-                p[j].pos += d_j;
+                println!("Position before:");
                 for k in 0..p.len() {
-                    println!("{:?}", p[k]);
+                    print!("{:?} ", p[k].pos[0]);
                 }
+                println!();
+                println!("Force: {:?}", q_force[0]);
+
+                // apply Newton's 2nd law of motion
+                let mass_i = p[i].m;
+                // let mass_j = p[j].m;
+                p[i].a = q_force / mass_i;
+                // p[j].a -= q_force / mass_j;
+                // let d_i = p[i].a;
+                // let d_j = p[j].a * self.delta_t / p[j].m;
+                let accel_i = p[i].a;
+                // let accel_j = p[j].a;
+                p[i].v += accel_i * self.delta_t;
+                // p[j].v += accel_j;
+
+                let v_i = p[i].v;
+                // let v_j = p[j].v;
+                p[i].pos += v_i * self.delta_t;
+                // p[j].pos += v_j;
+
+                // println!("Position after:");
+                // for k in 0..p.len() {
+                //     println!("{:?}", p[k]);
+                // }
             }
         }
     }
 
     pub fn add_atom(self: &mut Self, atom: &atom::Atom) {
-        // println!("Adding nucleus to the simulation...");
-        self.particles.push(atom.nucleus);
         for particle in &atom.electrons {
-            // println!("Adding electron to the simulation...");
-            self.particles.push(*particle);
+            self.particles.push(particle.clone());
         }
+        self.particles.push(atom.nucleus.clone());
     }
 }

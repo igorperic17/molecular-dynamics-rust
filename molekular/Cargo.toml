@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 kiss3d = "0.35.0"
-# nalgebra = "0.31.1"
+plotters = "0.3.4"
