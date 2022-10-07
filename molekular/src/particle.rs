@@ -1,5 +1,5 @@
 use crate::simulation;
-use kiss3d::nalgebra::Vector3;
+use kiss3d::nalgebra::{Vector3, Matrix3x1};
 use std::clone::Clone;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -21,6 +21,15 @@ pub enum SubatomicParticleType {
     Electron = 3,
 }
 
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
+pub enum ParticleProperty {
+    Position,
+    Velocity,
+    Accelleration,
+    PotentialEnergy,
+    KineticEnergy
+}
+
 #[derive(Debug, Clone)]
 pub struct Particle {
     pub pos: Vector3<f64>, // current Euclidean XYZ position [m]
@@ -31,7 +40,8 @@ pub struct Particle {
     pub e: f64,            // potential energy [kcal/mol]
     pub q: f64,            // electrical charge [C]
     pub particle_type: SubatomicParticleType,
-    pub history: HashMap<String, Vec<f32>>
+
+    data_trace: HashMap<ParticleProperty, Vec<Matrix3x1<f64>>>
 }
 
 impl Particle {
@@ -59,7 +69,7 @@ impl Particle {
             pos: Vector3::default(),
             e: 0.0,
             q: charge,
-            history: HashMap::new()
+            data_trace: HashMap::new()
         }
         
     }
@@ -75,7 +85,7 @@ impl Particle {
             pos: location,
             e: 0.0,
             q: -1.6e-19,
-            history: HashMap::new()
+            data_trace: HashMap::new()
         }
     }
 
@@ -89,7 +99,20 @@ impl Particle {
             pos: location,
             e: 0.0,
             q: -1.6e-19,
-            history: HashMap::new()
+            data_trace: HashMap::new()
+        }
+    }
+
+    pub fn log_debug_data(&mut self) {
+        match self.data_trace.get(&ParticleProperty::Position) {
+            Some(trace) => { 
+                // TODO: figure out how to get a direct mutable ref to the vector behind a hash key instead of cloning it
+                //       this will improve performance drastically
+                let mut t = trace.clone();
+                t.push(self.pos);
+                self.data_trace.insert(ParticleProperty::Position, t);
+            },
+            None => { self.data_trace.insert(ParticleProperty::Position, vec![self.pos]); }
         }
     }
 

@@ -80,11 +80,9 @@ impl Simulation {
                 // let v_j = p[j].v;
                 p[i].pos += v_i * self.delta_t;
                 // p[j].pos += v_j;
-
-                // println!("Position after:");
-                // for k in 0..p.len() {
-                //     println!("{:?}", p[k]);
-                // }
+                
+                // log the particle data for plaotting later
+                p[i].log_debug_data();
             }
         }
     }
