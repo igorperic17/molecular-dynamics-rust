@@ -1,11 +1,13 @@
 mod atom;
 mod particle;
 mod simulation;
+mod plot;
 
 extern crate kiss3d;
 
+use std::cell::RefCell;
 use kiss3d::light::Light;
-use kiss3d::nalgebra::{Matrix, Point2, Point3, Translation3, Vector3};
+use kiss3d::nalgebra::{Point3, Translation3, Vector3};
 use kiss3d::scene::SceneNode;
 use kiss3d::window::{State, Window};
 
@@ -15,7 +17,7 @@ pub const SIMULATION_SCALE: f64 = 1e10;
 
 struct AppState {
     nodes: Vec<SceneNode>,
-    simulation: simulation::Simulation,
+    simulation: RefCell<simulation::Simulation>,
 }
 
 impl AppState {
@@ -38,15 +40,15 @@ impl AppState {
 
         Self {
             nodes: nodes,
-            simulation: simulation,
+            simulation: RefCell::new(simulation),
         }
     }
 }
 
 impl State for AppState {
     fn step(&mut self, _: &mut Window) {
-        self.simulation.step();
-        for (i, particle) in self.simulation.particles.iter().enumerate() {
+        self.simulation.borrow_mut().step();
+        for (i, particle) in self.simulation.borrow().particles.iter().enumerate() {
             self.nodes[i].set_local_translation(Translation3::new(
                 (particle.pos.x * SIMULATION_SCALE) as f32,
                 (particle.pos.y * SIMULATION_SCALE) as f32,
@@ -60,8 +62,8 @@ impl State for AppState {
 }
 
 fn main() {
-    let steps = -1;
-    // let steps = 50;
+    // let steps = -1;
+    let steps = 50;
 
     // create a simulation with deltaT = 1fs and temperature = 500 K
     let mut simulation = simulation::Simulation::new(1e-9, 500.0);
@@ -72,7 +74,7 @@ fn main() {
 
     let window: &mut Window = &mut Window::new("Hydrogen atom simulation");
     window.set_light(Light::StickToCamera);
-    let state = &mut AppState::new(window, simulation);
+    let state = &mut AppState::new(window, simulation); 
 
     let mut i = 0;
     loop {
@@ -99,4 +101,7 @@ fn main() {
             }
         };
     }
+
+    let plot_data = state.simulation.borrow().particles[0].get_debug_data();
+    plot::plot(&plot_data, "/Users/igor/code/rust/molecular-dynamics-rust/molekular/chart.png");
 }

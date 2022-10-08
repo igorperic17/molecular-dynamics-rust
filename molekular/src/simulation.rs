@@ -13,7 +13,7 @@ pub enum ParticleHistoryEnum {
 pub struct Simulation {
     delta_t: f64,
     pub particles: Vec<particle::Particle>,
-    temperature: f64,
+    // temperature: f64,
 }
 
 impl Simulation {
@@ -22,7 +22,7 @@ impl Simulation {
         Simulation {
             delta_t: delta_t,
             particles: Vec::new(),
-            temperature: temperature,
+            // temperature: temperature,
         }
     }
 
@@ -83,6 +83,8 @@ impl Simulation {
                 
                 // log the particle data for plaotting later
                 p[i].log_debug_data();
+
+                println!("Log size: {:?}", p[i].get_log_size());
             }
         }
     }

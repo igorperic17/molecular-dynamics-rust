@@ -1,9 +1,11 @@
 use crate::simulation;
 use kiss3d::nalgebra::{Vector3, Matrix3x1};
+use std::borrow::{BorrowMut, Borrow};
 use std::clone::Clone;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::marker::Copy;
+use std::cell::RefCell;
 
 // artificially scale the particles up, so they can be seen when far apart
 const PARTICLE_RADIUS_FACTOR: f64 = 1e-2;
@@ -41,7 +43,7 @@ pub struct Particle {
     pub q: f64,            // electrical charge [C]
     pub particle_type: SubatomicParticleType,
 
-    data_trace: HashMap<ParticleProperty, Vec<Matrix3x1<f64>>>
+    data_trace: HashMap<ParticleProperty, RefCell<Vec<Matrix3x1<f64>>>>
 }
 
 impl Particle {
@@ -106,14 +108,22 @@ impl Particle {
     pub fn log_debug_data(&mut self) {
         match self.data_trace.get(&ParticleProperty::Position) {
             Some(trace) => { 
-                // TODO: figure out how to get a direct mutable ref to the vector behind a hash key instead of cloning it
-                //       this will improve performance drastically
-                let mut t = trace.clone();
+                let mut t = trace.borrow_mut();
                 t.push(self.pos);
-                self.data_trace.insert(ParticleProperty::Position, t);
             },
-            None => { self.data_trace.insert(ParticleProperty::Position, vec![self.pos]); }
+            None => { self.data_trace.insert(ParticleProperty::Position, RefCell::new(vec![self.pos])); }
         }
+    }
+
+    pub fn get_log_size(&self) -> usize {
+        self.data_trace.get(&ParticleProperty::Position).unwrap().borrow().len()
+    }
+
+    pub fn get_debug_data(&self) -> Vec<f64> {
+        let res: Vec<f64> = self.data_trace.get(&ParticleProperty::Position).unwrap().borrow().iter().map(|x| {
+            x[0] // take only x coordinate
+        }).collect();
+        res
     }
 
     // pub fn setPosition()
