@@ -66,25 +66,24 @@ impl Simulation {
 
                 // apply Newton's 2nd law of motion
                 let mass_i = p[i].m;
-                // let mass_j = p[j].m;
+                let mass_j = p[j].m;
                 p[i].a = q_force / mass_i;
-                // p[j].a -= q_force / mass_j;
+                p[j].a = q_force / mass_j;
                 // let d_i = p[i].a;
                 // let d_j = p[j].a * self.delta_t / p[j].m;
                 let accel_i = p[i].a;
-                // let accel_j = p[j].a;
+                let accel_j = p[j].a;
                 p[i].v += accel_i * self.delta_t;
-                // p[j].v += accel_j;
+                p[j].v += accel_j * self.delta_t;
 
                 let v_i = p[i].v;
-                // let v_j = p[j].v;
+                let v_j = p[j].v;
                 p[i].pos += v_i * self.delta_t;
-                // p[j].pos += v_j;
+                p[j].pos += v_j * self.delta_t;
                 
                 // log the particle data for plaotting later
                 p[i].log_debug_data();
-
-                println!("Log size: {:?}", p[i].get_log_size());
+                p[j].log_debug_data();
             }
         }
     }
