@@ -1,6 +1,7 @@
 use crate::atom;
 use crate::particle;
 use kiss3d::nalgebra::Vector3;
+use std::cmp::{max, min};
 
 const COULUMB_CONSTANT: f64 = 9.0 * 10e9;
 
@@ -55,7 +56,8 @@ impl Simulation {
                     f_charge / d_vec.z
                 };
 
-                let q_force = Vector3::new(f_x, f_y, f_z);
+                const L: f64 = 1e-16;
+                let q_force = Vector3::new( f_x.clamp(-L, L), f_y.clamp(-L, L), f_z.clamp(-L, L)) * self.delta_t;
 
                 println!("Position before:");
                 for k in 0..p.len() {
@@ -68,7 +70,7 @@ impl Simulation {
                 let mass_i = p[i].m;
                 let mass_j = p[j].m;
                 p[i].a = q_force / mass_i;
-                p[j].a = q_force / mass_j;
+                p[j].a = -q_force / mass_j;
                 // let d_i = p[i].a;
                 // let d_j = p[j].a * self.delta_t / p[j].m;
                 let accel_i = p[i].a;

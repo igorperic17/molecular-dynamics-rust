@@ -62,11 +62,11 @@ impl State for AppState {
 }
 
 fn main() {
-    // let steps = -1;
-    let steps = 20;
+    let steps = -1;
+    // let steps = 150;
 
     // create a simulation with deltaT = 1fs and temperature = 500 K
-    let mut simulation = simulation::Simulation::new(1e-13, 500.0);
+    let mut simulation = simulation::Simulation::new(1e-9, 500.0);
 
     let hydrogen =
         atom::Atom::create_hidrogen(Vector3::new(0.0, 0.0, 0.05 * (1.0 / SIMULATION_SCALE)));
