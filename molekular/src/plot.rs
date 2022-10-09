@@ -16,7 +16,7 @@ pub fn plot(vec: &Vec<f64>, file: &str) {
         .set_label_area_size(LabelAreaPosition::Bottom, 40.0)
         .caption("Electron position X", ("sans-serif", 40.0))
         .x_label_area_size(50)
-        .y_label_area_size(50)
+        .y_label_area_size(100)
         .margin(5)
         .build_cartesian_2d(0.0..vec.len() as f64, y_range)
         .unwrap();

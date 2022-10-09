@@ -1,6 +1,4 @@
-use crate::simulation;
-use kiss3d::nalgebra::{Vector3, Matrix3x1};
-use std::borrow::{BorrowMut, Borrow};
+use crate::simulation;use kiss3d::nalgebra::{Vector3, Matrix3x1};
 use std::clone::Clone;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -27,9 +25,14 @@ pub enum SubatomicParticleType {
 pub enum ParticleProperty {
     Position,
     Velocity,
-    Accelleration,
-    PotentialEnergy,
-    KineticEnergy
+    Accelleration
+}
+
+#[derive(Copy, Clone)]
+pub enum ParticleVector {
+    X = 0,
+    Y,
+    Z
 }
 
 #[derive(Debug, Clone)]
@@ -106,12 +109,28 @@ impl Particle {
     }
 
     pub fn log_debug_data(&mut self) {
-        match self.data_trace.get(&ParticleProperty::Position) {
-            Some(trace) => { 
-                let mut t = trace.borrow_mut();
-                t.push(self.pos);
-            },
-            None => { self.data_trace.insert(ParticleProperty::Position, RefCell::new(vec![self.pos])); }
+
+        let log_trace_fn = |s: &mut Particle, x: &ParticleProperty| {
+            let v = s.get_property(x);
+            match s.data_trace.get(x) {
+                Some(trace) => { 
+                    let mut t = trace.borrow_mut();
+                    t.push(v);
+                },
+                None => { s.data_trace.insert(x.clone(), RefCell::new(vec![v])); }
+            }
+        };
+
+        log_trace_fn(self, &ParticleProperty::Accelleration);
+        log_trace_fn(self, &ParticleProperty::Position);
+        log_trace_fn(self, &ParticleProperty::Velocity);
+    }
+
+    pub fn get_property(&self, x: &ParticleProperty) -> Matrix3x1<f64> {
+        match x {
+            ParticleProperty::Position => self.pos,
+            ParticleProperty::Accelleration => self.a,
+            ParticleProperty::Velocity => self.v
         }
     }
 
@@ -119,9 +138,9 @@ impl Particle {
         self.data_trace.get(&ParticleProperty::Position).unwrap().borrow().len()
     }
 
-    pub fn get_debug_data(&self) -> Vec<f64> {
-        let res: Vec<f64> = self.data_trace.get(&ParticleProperty::Position).unwrap().borrow().iter().map(|x| {
-            x[0] // take only x coordinate
+    pub fn get_debug_data(&self, prop: &ParticleProperty, vec: ParticleVector) -> Vec<f64> {
+        let res: Vec<f64> = self.data_trace.get(prop).unwrap().borrow().iter().map(|x| {
+            x[vec as usize]
         }).collect();
         res
     }

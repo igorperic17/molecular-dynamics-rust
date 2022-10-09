@@ -102,6 +102,10 @@ fn main() {
         };
     }
 
-    let plot_data = state.simulation.borrow().particles[0].get_debug_data();
-    plot::plot(&plot_data, "/Users/igor/code/rust/molecular-dynamics-rust/molekular/chart.png");
+    let plot_data = state.simulation.borrow().particles[0].get_debug_data(&particle::ParticleProperty::Position, particle::ParticleVector::X);
+    plot::plot(&plot_data, "/Users/igor/code/rust/molecular-dynamics-rust/molekular/charts/pos.png");
+    let plot_data = state.simulation.borrow().particles[0].get_debug_data(&particle::ParticleProperty::Velocity, particle::ParticleVector::X);
+    plot::plot(&plot_data, "/Users/igor/code/rust/molecular-dynamics-rust/molekular/charts/vel.png");
+    let plot_data = state.simulation.borrow().particles[0].get_debug_data(&particle::ParticleProperty::Accelleration, particle::ParticleVector::X);
+    plot::plot(&plot_data, "/Users/igor/code/rust/molecular-dynamics-rust/molekular/charts/accel.png");
 }
